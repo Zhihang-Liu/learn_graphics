@@ -62,14 +62,16 @@ fn main() {
         [2.2, 1.3, 1.0],
         [4.4, 11.0, 1.0],
         [15.3, 8.6, 1.0]];
-    let tri = Mat3::from_cols_array_2d(&lst).mul_scalar(hyper);
+    let tri = Mat3::from_cols_array_2d(&lst);
     let lst: [[f32; 3]; 3] = [
         [5.8, 5.2, 1.0],
         [15.4, 20.0, 1.0],
         [25.3, 24.6, 1.0]];
-    let tri1 = Mat3::from_cols_array_2d(&lst).mul_scalar(hyper);
+    let tri1 = Mat3::from_cols_array_2d(&lst);
     let mut screen = Image::new(size.x, size.y);
-    rasterization(tri, &mut screen);
-    rasterization(tri1, &mut screen);
+    [tri, tri1]
+        .iter()
+        .map(|x| x.mul_scalar(hyper))
+        .for_each(|tri| rasterization(tri, &mut screen));
     screen.save("out.bmp").expect("save error");
 }
