@@ -4,6 +4,7 @@ use ordered_float::OrderedFloat;
 
 type Triangle = Mat3;
 
+#[inline]
 fn f2b(i: Vec3) -> bool {
     if i.z > 0.0 {
         true
@@ -25,10 +26,7 @@ fn inside(tri: Triangle, x: f32, y: f32) -> bool {
     let c = f2b(v2.cross(p2));
     a == b && b == c
 }
-/* return mat:
-x: [min_x, min_y],
-y: [max_x, max_y]
-*/
+
 fn bounding_box(tri: Triangle) -> Mat2 {
     let vec_iter = [tri.x_axis, tri.y_axis, tri.z_axis];
     let x_list = vec_iter.iter().map(
