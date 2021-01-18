@@ -6,11 +6,7 @@ type Triangle = Mat3;
 
 #[inline]
 fn f2b(i: Vec3) -> bool {
-    if i.z > 0.0 {
-        true
-    } else {
-        false
-    }
+    i.z > 0.0
 }
 
 fn inside(tri: Triangle, x: f32, y: f32) -> bool {
