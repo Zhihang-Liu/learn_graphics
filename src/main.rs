@@ -43,7 +43,9 @@ fn rasterization(tri: Triangle, buffer: &mut Vec<Vec<bool>>) {
     let size = bounding_box(tri);
     for y in size.x_axis.y as usize..size.y_axis.y as usize+1 {
         for x in size.x_axis.x as usize..size.y_axis.x as usize+1 {
-            let p = buffer.get_mut(y).unwrap().get_mut(x).unwrap();
+            let p = unsafe {
+                buffer.get_unchecked_mut(y).get_unchecked_mut(x)
+            };
             if *p == false {
                 *p = inside(tri, x as f32+0.5, y as f32+0.5);
             };
@@ -126,7 +128,7 @@ fn output(path: &str, buffer: &Vec<Vec<Vec3>>, x: u32, y: u32) {
 
 fn main() {
     // input
-    const HYPER: usize = 10;
+    const HYPER: usize = 16;
     let sampling_pipe = 4;
     let size = uvec2(32, 32);
 
