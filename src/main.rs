@@ -1,16 +1,19 @@
+mod triangle;
+mod rasterization;
+mod utils;
+
 use glam::*;
 use bmp::{Image, Pixel, consts::{WHITE}};
 use ordered_float::OrderedFloat;
 use lazy_static::lazy_static;
 
-type Triangle = Mat3;
+use utils::*;
+// use triangle::*;
+use rasterization::*;
 
-#[inline]
-fn f2b(i: Vec3) -> bool {
-    i.z > 0.0
-}
+pub type Triangle = Mat3;
 
-fn inside(tri: Triangle, x: f32, y: f32) -> bool {
+pub fn inside(tri: Triangle, x: f32, y: f32) -> bool {
     let p = vec3(x, y, 1.0);
     let v0: Vec3 = tri.y_axis - tri.x_axis;
     let v1: Vec3 = tri.z_axis - tri.y_axis;
@@ -24,7 +27,7 @@ fn inside(tri: Triangle, x: f32, y: f32) -> bool {
     a == b && b == c
 }
 
-fn bounding_box(tri: Triangle) -> Mat2 {
+pub fn bounding_box(tri: Triangle) -> Mat2 {
     let vec_iter = [tri.x_axis, tri.y_axis, tri.z_axis];
     let x_list = vec_iter.iter().map(
         |v| OrderedFloat::from(v.x));
@@ -90,11 +93,6 @@ fn sampling(i: Vec<Vec<bool>>, sampling_pipe: usize, h: usize, w: usize) -> Vec<
         }
     }
     buffer
-}
-
-#[inline]
-fn vec3_to_pixel(i: Vec3) -> Pixel {
-    Pixel::new(i.x as u8, i.y as u8, i.z as u8)
 }
 
 fn init() -> Vec<Mat3> {
