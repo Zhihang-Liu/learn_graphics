@@ -28,16 +28,16 @@ impl Rasterizer {
             projection: Cell::default(),
             width: Cell::from(0),
             height: Cell::from(0),
-            sampling_pipe: Cell::from(2),
+            sampling_pipe: Cell::from(1),
             frame_buf: RefCell::from(vec![]),
             depth_buf: RefCell::from(vec![]),
         }
     }
 
     pub fn set_size(&mut self, w: usize, h: usize) {
+        let sp = self.sampling_pipe.get();
         self.width.set(w);
         self.height.set(h);
-        let sp = self.sampling_pipe.get();
         self.frame_buf.get_mut().resize(w*sp*h*sp, Vec3::default());
         self.depth_buf.get_mut().resize(w*sp*h*sp, f32::default());
     }
@@ -69,6 +69,7 @@ impl Rasterizer {
 
     fn rasterization_triangle(&mut self, tri: &Triangle) {
         let size = tri.bounding_box();
+
         for y in size.x_axis.y as usize..size.y_axis.y as usize + 1 {
             for x in size.x_axis.x as usize..size.y_axis.x as usize + 1 {
                 if tri.inside(x, y) {
@@ -99,16 +100,14 @@ impl Rasterizer {
         // /*
         let buf = (hy..hy+sp)
                 .flat_map(|y| (hx..hx+sp).map(move |x|(x, y)))
-                // .map(|v| {println!("out: {:?}", v); v})
                 .map(|(x, y)| point2index(w, x, y))
-                // .map(|v| {println!("out: {}", v); v})
                 .map(|ind| self.frame_buf.try_borrow().unwrap()[ind])
                 .collect();
         //  */
         return sampling_unit(&buf);
     }
 
-    
+    /*
     fn sampling(&self) -> Vec<Vec3> {
         // todo!("有bug");
         let h = self.height.get();
@@ -130,32 +129,33 @@ impl Rasterizer {
         //  */
         return buf;
     }
-
-    pub fn draw(&self) {
-        // For reading and opening files
-        use std::path::Path;
-        use std::fs::File;
-        use std::io::BufWriter;
-
-        let path = Path::new(r"out.png");
-        let file = File::create(path).unwrap();
-        let ref mut wr = BufWriter::new(file);
-
+     */
+    /*
+    fn sampling(&self) -> Vec<Vec3> {
         let w = self.width.get();
         let h = self.height.get();
-
-        let mut encoder = png::Encoder::new(wr, w as u32, h as u32); // Width is 2 pixels and height is 1.
-        encoder.set_color(png::ColorType::RGB);
-        // encoder.set_depth(png::BitDepth::Eight);
-        let mut writer = encoder.write_header().unwrap();
-
-        let data: Vec<f32> = self.sampling()
-            .iter()
-            .flat_map(|v| vec![v.x, v.x, v.x])
+        let sp = self.sampling_pipe.get();
+        let buf = self.frame_buf.try_borrow().unwrap();
+        let buf = (0..h)
+            .flat_map(|y| (0..w).map(move |x| (x*sp, y*sp)))
+            .map(|(x, y)| buf.get(point2index(w, x, y)).unwrap().clone())
             .collect();
+        return buf;
+    } */
 
-        let data: Vec<u8> = data.iter().map(|v| *v as u8).collect();
+    pub fn draw(&self) {
+        let w = self.width.get();
+        let h = self.height.get();
+        let mut screen = Image::new(w as u32, h as u32);
 
-        writer.write_image_data(&data).unwrap();
+        // self.sampling()
+        self.frame_buf.try_borrow().unwrap()
+            .iter().enumerate()
+            .for_each(|(ind, p)| {
+                let (x, y) = index2point(w, ind);
+                screen.set_pixel(x as u32, y as u32, vec3_to_pixel(*p))
+            });
+
+        screen.save("out.bmp").expect("save error");
     }
 }
