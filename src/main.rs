@@ -2,15 +2,17 @@ mod triangle;
 mod rasterization;
 mod utils;
 
+use std::cell::Cell;
+
 use glam::*;
-use bmp::{Image, Pixel, consts::{WHITE}};
-use ordered_float::OrderedFloat;
-use lazy_static::lazy_static;
+use bmp::consts::{RED, WHITE};
+
 
 use utils::*;
-// use triangle::*;
+use triangle::*;
 use rasterization::*;
 
+/*
 pub type Triangle = Mat3;
 
 pub fn inside(tri: Triangle, x: f32, y: f32) -> bool {
@@ -95,24 +97,6 @@ fn sampling(i: Vec<Vec<bool>>, sampling_pipe: usize, h: usize, w: usize) -> Vec<
     buffer
 }
 
-fn init() -> Vec<Mat3> {
-    let lst: [[f32; 3]; 3] = [
-        [2.2, 1.3, 1.0],
-        [4.4, 11.0, 1.0],
-        [15.3, 8.6, 1.0]];
-    let tri = Mat3::from_cols_array_2d(&lst);
-    let lst: [[f32; 3]; 3] = [
-        [5.8, 5.2, 1.0],
-        [15.4, 20.0, 1.0],
-        [25.3, 24.6, 1.0]];
-    let tri1 = Mat3::from_cols_array_2d(&lst);
-    vec![tri, tri1]
-}
-
-fn new_2d_array<T: Clone>(default: T, x: usize, y: usize) -> Vec<Vec<T>> {
-    let line = vec![default; x];
-    vec![line; y]
-}
 
 fn output(path: &str, buffer: &Vec<Vec<Vec3>>, x: u32, y: u32) {
     let mut screen = Image::new(x, y);
@@ -124,21 +108,32 @@ fn output(path: &str, buffer: &Vec<Vec<Vec3>>, x: u32, y: u32) {
     screen.save(path).expect("save error");
 }
 
+ */
+
+fn init() -> Vec<Triangle> {
+    let tri = Triangle {
+        v: Cell::from([
+            const_vec3!([2.2, 1.3, 1.0]),
+            const_vec3!([4.4, 11.0, 1.0]),
+            const_vec3!([15.3, 8.6, 1.0])
+        ]),
+        color: pixel_to_vec3(WHITE),
+    };
+    let tri1 = Triangle {
+        v: Cell::from([
+            const_vec3!([5.8, 5.2, 1.0]),
+            const_vec3!([15.4, 20.0, 1.0]),
+            const_vec3!([25.3, 24.6, 1.0])
+        ]),
+        color: pixel_to_vec3(RED),
+
+    };
+    vec![tri, tri1]
+}
+
 fn main() {
-    // input
-    const HYPER: usize = 16;
-    let sampling_pipe = 4;
-    let size = uvec2(32, 32);
-
-    let mut buffer = new_2d_array(
-        false, size.x as usize*sampling_pipe*HYPER, size.y as usize*sampling_pipe*HYPER);
-
-    init()
-        .iter()
-        .map(|x| x.mul_scalar(HYPER as f32 * sampling_pipe as f32))
-        .for_each(|tri| rasterization(tri, &mut buffer));
-    
-    let buffer = sampling(buffer, sampling_pipe, size.y as usize*HYPER, size.x as usize*HYPER);
-
-    output("out.bmp", &buffer, HYPER as u32*size.x, HYPER as u32*size.y);
+    let mut raster =  Rasterizer::new();
+    raster.set_size(32, 32);
+    raster.rasterization(&mut init());
+    raster.draw();
 }
