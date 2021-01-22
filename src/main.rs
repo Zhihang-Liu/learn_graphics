@@ -128,12 +128,13 @@ fn init() -> Vec<Triangle> {
         color: pixel_to_vec3(RED),
 
     };
-    vec![tri, tri1]
+    vec![tri1]
 }
 
 fn main() {
-    let mut raster =  Rasterizer::new();
+    let mut raster = Rasterizer::new();
     raster.set_size(32, 32);
     raster.rasterization(&mut init());
+    // raster.sampling_range(0, 0);
     raster.draw();
 }
